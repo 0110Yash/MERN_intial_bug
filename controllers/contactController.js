@@ -25,15 +25,38 @@ const createContacts=asyncHandler(async (req, res) => {
 });
 
 const getContact=asyncHandler( async (req, res) => {
-    res.status(200).json({message: `Get contacts for ${req.params.id} contacts`});
+    const contacts=await contact.findById(req.params.id);
+    if(!contacts){
+        res.status(404);
+        throw new Error("Contact not found");
+    }
+    res.status(200).json(contacts);
 });
 
 const updateContacts=asyncHandler(async(req, res) => {
-    res.status(200).json({message: `Update contacts for ${req.params.id} contacts`});
+    const contacts=await contact.findById(req.params.id);
+    if(!contacts){
+        res.status(404);
+        throw new Error("Contact not found");
+    }
+    const updatedcontacts=await contacts.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {new: true}
+    );
+
+    res.status(200).json(updateContacts);
 });
 
 const deleteContacts=asyncHandler(async (req, res) => {
-    res.status(200).json({message: `Delete contacts for ${req.params.id} contacts`});
+    const contacts=await contact.findById(req.params.id);
+    if(!contacts){
+        res.status(404);
+        throw new Error("Contact not found");
+    }
+    await contacts.remove();
+
+    res.status(200).json(contacts);
 });
 
 module.exports={getContacts,createContacts,getContact,updateContacts,deleteContacts};
