@@ -1,5 +1,6 @@
 const asyncHandler=require('express-async-handler');
 const bcrypt=require("bcrypt");
+const jwt=require("jsonwebtoken");
 const User=require("../models/userModels");
 
 const registerUser= asyncHandler(async (req, res) => {
@@ -35,8 +36,36 @@ const registerUser= asyncHandler(async (req, res) => {
     res.json({message: "Register the user"});
 });
 
-const loginUser= asyncHandler((req,res) =>{
-    res.json({message: "Login user"});
+const loginUser= asyncHandler(async (req,res) =>{
+    const {username, email}=req.body;
+    if(!username || !email){
+        res.status(400);
+        throw new Error("All fields are mandatory");
+    }
+    
+    const User=await User.findOne({email});
+
+    if(User && (await bcrypt.compare(password,User.password)))
+    {
+        const accessToken=jwt.sign(
+            {
+                User: {
+                    username: User.username,
+                    email: User.email,
+                    id: User.id
+                },
+            },
+            process.env.ACCESS_TOKEN_SECRET,
+            {expiresIn: "1m"}
+            );
+            res.json({accessToken});
+    }
+    else{
+        res.status(401)
+        throw new console.error("Email or password is not valid!");
+    }
+    res.json({message: "Login User"})
+    
 });
 
 const currentUser= asyncHandler((req,res) =>{
